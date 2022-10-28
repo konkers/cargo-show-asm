@@ -313,9 +313,12 @@ fn locate_asm_path_via_artifact(artifact: &Artifact, expect_ext: &str) -> anyhow
             exe_path.with_file_name("deps")
         };
 
+        let exe_contents = std::fs::read(&exe_path)?;
+
         for entry in deps_dir.read_dir()? {
             let maybe_origin = entry?.path();
-            if same_file::is_same_file(&exe_path, &maybe_origin)? {
+            let maybe_origin_contents = std::fs::read(&maybe_origin)?;
+            if exe_contents == maybe_origin_contents {
                 let asm_file = maybe_origin.with_extension(expect_ext);
                 if asm_file.exists() {
                     return Ok(asm_file);
